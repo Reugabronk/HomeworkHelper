@@ -2,6 +2,7 @@
 // en voeg hem hieronder toe (en in `AanbiederId` in data/settings.ts).
 import type { AanbiederId, Instellingen, Sleutels } from '../../data/settings';
 import { ANTHROPIC_MODELLEN, AnthropicAanbieder } from './anthropic';
+import { GEMINI_MODELLEN, GeminiAanbieder, kiesGeminiModel } from './gemini';
 import { OpenAiCompatibeleAanbieder } from './openai-compatible';
 import type { AanbiederConfig, AiAanbieder, ModelInfo } from './types';
 
@@ -13,10 +14,26 @@ export interface AanbiederBeschrijving {
   sleutelVoorbeeld: string;
   heeftBaseUrl: boolean;
   bekendeModellen: ModelInfo[];
+  /** Kiest na het ophalen van de modellen automatisch een goed model. */
+  kiesModel?: (modellen: ModelInfo[]) => string | undefined;
+  /** Gratis te gebruiken (met limieten). */
+  gratis?: boolean;
   maak(config: AanbiederConfig): AiAanbieder;
 }
 
 export const AANBIEDERS: Record<AanbiederId, AanbiederBeschrijving> = {
+  gemini: {
+    id: 'gemini',
+    naam: 'Google Gemini (gratis)',
+    uitleg: 'Gratis te gebruiken met een Google-account (met een dagelijkse limiet). Maak een sleutel aan in Google AI Studio.',
+    sleutelUrl: 'https://aistudio.google.com/apikey',
+    sleutelVoorbeeld: 'AIza…',
+    heeftBaseUrl: false,
+    bekendeModellen: GEMINI_MODELLEN,
+    kiesModel: kiesGeminiModel,
+    gratis: true,
+    maak: (config) => new GeminiAanbieder(config),
+  },
   anthropic: {
     id: 'anthropic',
     naam: 'Anthropic (Claude)',

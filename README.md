@@ -2,7 +2,9 @@
 
 Verslagcoach helpt studenten bij het schrijven van verslagen voor school. **Jij schrijft het verslag zelf**; de AI-coach helpt je het onderwerp te begrijpen, stelt vragen en geeft feedback. De coach schrijft nooit kant-en-klare verslagtekst voor je.
 
-Het is een statische website: alles draait in je browser, er is geen eigen server en er is geen tracking. Je gebruikt je eigen AI-sleutel.
+**Gebruiken? Open de website, je hoeft niets te installeren.** Na publicatie staat de app op `https://<gebruikersnaam>.github.io/HomeworkHelper/`. Je hebt alleen één keer een gratis sleutel van Google Gemini nodig (zie hieronder).
+
+Het is een statische website: alles draait in je browser, er is geen eigen server en er is geen tracking.
 
 ## Wat doet de app?
 
@@ -28,9 +30,24 @@ Functies:
 
 ## Een API-sleutel aanmaken en invullen
 
-Verslagcoach heeft geen ingebouwde AI-sleutel. Iedere gebruiker vult zijn eigen sleutel in.
+Verslagcoach heeft geen ingebouwde AI-sleutel. Iedere gebruiker vult één keer zijn eigen sleutel in. Inloggen met een bestaand ChatGPT- of Claude-abonnement kan niet: die abonnementen zijn niet bedoeld voor andere websites.
 
-### Anthropic (Claude) – aanbevolen
+### Google Gemini – gratis (standaard)
+
+Gemini is de standaardaanbieder, omdat je het gratis kunt gebruiken met een Google-account.
+
+1. Open [Google AI Studio](https://aistudio.google.com/apikey) en log in met je Google-account.
+2. Klik op **Create API key** en kopieer de sleutel (begint met `AIza`).
+3. Open Verslagcoach → **Instellingen**, plak de sleutel en klik op **Sleutel opslaan**.
+4. De app controleert de sleutel en kiest zelf het nieuwste gratis Flash-model. Klaar.
+
+Goed om te weten:
+
+- De gratis laag heeft een limiet per minuut en per dag. Is die op, dan meldt de app dat; wacht even of probeer het morgen weer.
+- Bij gratis gebruik mag Google je vragen en antwoorden gebruiken om zijn producten te verbeteren, en kunnen mensen meelezen. Zet er geen persoonlijke of geheime gegevens in.
+- Volgens de voorwaarden van Google moet je 18 jaar of ouder zijn om de Gemini API te gebruiken.
+
+### Anthropic (Claude) – betaald, hoogste kwaliteit
 
 1. Ga naar de [Claude Console](https://platform.claude.com/) en maak een account aan.
 2. Zet tegoed op je account (Billing). Stel eventueel een maandelijks maximum in, zodat je nooit meer uitgeeft dan je wilt.
@@ -62,6 +79,8 @@ Let op: niet elke aanbieder staat verzoeken rechtstreeks vanuit de browser toe (
 
 Duidelijke foutmeldingen vertellen wat er mis is, bijvoorbeeld een ongeldige sleutel, een bereikte limiet, geen tegoed of geen internet.
 
+Voor Gemini praat de app rechtstreeks met de REST-API van Google (`generativelanguage.googleapis.com`); de sleutel gaat mee in de header `x-goog-api-key`, niet in de URL.
+
 ## Een eigen Word-sjabloon maken
 
 Je kunt het sjabloon van je school gebruiken. Zet daarin de volgende placeholders (inclusief de dubbele accolades):
@@ -92,9 +111,9 @@ Tips:
 - Onbekende placeholders (zoals `{{DOCENT}}`) blijven staan; de app waarschuwt je.
 - Na het openen vraagt Word of velden bijgewerkt moeten worden. Kies **Ja**: dan wordt de inhoudsopgave gevuld.
 
-## Lokaal draaien
+## Lokaal draaien (alleen voor ontwikkelaars)
 
-Je hebt [Node.js](https://nodejs.org/) 22 of nieuwer nodig.
+Gebruikers hebben dit niet nodig. Je hebt [Node.js](https://nodejs.org/) 22 of nieuwer nodig.
 
 ```bash
 npm install
@@ -141,7 +160,7 @@ De site gebruikt relatieve paden en hash-routing (`#/...`), dus hij werkt in elk
 | `src/ai/standaard-instructies.ts` | **Alle standaardinstructies voor de coach** in één bestand |
 | `src/ai/prompts.ts` | Bouwt de prompts op uit de coach-instellingen |
 | `src/ai/plan.ts` | JSON-schema en verwerking van het plan |
-| `src/ai/providers/` | Anthropic (SDK), OpenAI-compatibel, foutmeldingen. Een nieuwe aanbieder implementeert `AiAanbieder` en wordt geregistreerd in `index.ts` |
+| `src/ai/providers/` | Gemini (standaard), Anthropic (SDK), OpenAI-compatibel, foutmeldingen. Een nieuwe aanbieder implementeert `AiAanbieder` en wordt geregistreerd in `index.ts` |
 | `src/data/` | Gegevensmodel, IndexedDB, instellingen, back-up |
 | `src/docx/` | Word-export, standaardsjabloon en import van oude verslagen |
 | `src/ui/` | React-componenten en pagina's |

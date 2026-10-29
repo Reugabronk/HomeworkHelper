@@ -1,7 +1,9 @@
 // Instellingen in localStorage. De API-sleutels staan apart en gaan NOOIT mee in een back-up.
+import { GEMINI_STANDAARD_MODEL } from '../ai/providers/gemini';
 import { STANDAARD_COACH_INSTELLINGEN, type CoachInstellingen } from '../ai/standaard-instructies';
 
-export type AanbiederId = 'anthropic' | 'openai';
+export type AanbiederId = 'gemini' | 'anthropic' | 'openai';
+export const AANBIEDER_IDS: readonly AanbiederId[] = ['gemini', 'anthropic', 'openai'];
 export type Thema = 'auto' | 'licht' | 'donker';
 
 export interface Profiel {
@@ -34,6 +36,7 @@ export const INSTELLINGEN_SLEUTEL = 'verslagcoach.instellingen';
 export const API_SLEUTELS_SLEUTEL = 'verslagcoach.apiSleutels';
 
 export const STANDAARD_MODEL: Record<AanbiederId, string> = {
+  gemini: GEMINI_STANDAARD_MODEL,
   anthropic: 'claude-opus-5-5',
   openai: '',
 };
@@ -42,7 +45,8 @@ export const STANDAARD_INSTELLINGEN: Instellingen = {
   versie: 1,
   profiel: { naam: '', klas: '', school: '' },
   ai: {
-    aanbieder: 'anthropic',
+    // Gemini heeft een gratis laag: zo kan iedereen zonder tegoed beginnen.
+    aanbieder: 'gemini',
     model: { ...STANDAARD_MODEL },
     baseUrl: 'https://api.openai.com/v1',
     maxAfbeeldingen: 6,
@@ -97,8 +101,9 @@ export function normaliseerInstellingen(ruw: unknown): Instellingen {
       school: tekst(profiel.school, ''),
     },
     ai: {
-      aanbieder: keuze(ai.aanbieder, ['anthropic', 'openai'] as const, s.ai.aanbieder),
+      aanbieder: keuze(ai.aanbieder, AANBIEDER_IDS, s.ai.aanbieder),
       model: {
+        gemini: tekst(model.gemini, s.ai.model.gemini) || s.ai.model.gemini,
         anthropic: tekst(model.anthropic, s.ai.model.anthropic) || s.ai.model.anthropic,
         openai: tekst(model.openai, s.ai.model.openai),
       },
@@ -134,7 +139,7 @@ export function laadSleutels(): Sleutels {
   const ruw = leesJson(API_SLEUTELS_SLEUTEL);
   if (!isObject(ruw)) return {};
   const sleutels: Sleutels = {};
-  for (const id of ['anthropic', 'openai'] as const) {
+  for (const id of AANBIEDER_IDS) {
     if (typeof ruw[id] === 'string' && ruw[id]) sleutels[id] = (ruw[id] as string).trim();
   }
   return sleutels;
