@@ -13,9 +13,10 @@ permissions:
   pages: write
   id-token: write
 
+# Publicaties wachten op elkaar en worden nooit halverwege afgebroken.
 concurrency:
   group: pages-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   bouwen:
@@ -42,5 +43,14 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # Een (opnieuw gestarte) run van een oudere commit mag de nieuwste versie niet overschrijven.
+      - name: Controleren of dit de nieuwste versie van main is
+        id: nieuwste
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          laatste=$(gh api "repos/${{ github.repository }}/commits/main" --jq .sha)
+          if [ "$laatste" = "${{ github.sha }}" ]; then echo "publiceren=ja" >> "$GITHUB_OUTPUT"; else echo "Overgeslagen: main staat al op $laatste"; fi
       - id: deployment
+        if: steps.nieuwste.outputs.publiceren == 'ja'
         uses: actions/deploy-pages@v4
