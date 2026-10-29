@@ -6,6 +6,7 @@ import { Instellingen } from '../ui/pages/Instellingen';
 import { NieuweOpdracht } from '../ui/pages/NieuweOpdracht';
 import { Overzicht } from '../ui/pages/Overzicht';
 import { OpdrachtPagina } from '../ui/pages/opdracht/OpdrachtPagina';
+import { GeminiStappen } from '../ui/components/GeminiUitleg';
 import { Toasts } from '../ui/components/Toasts';
 import { useApp } from './context';
 import { routeNaarHash, useRoute, type Route } from './router';
@@ -52,7 +53,7 @@ function Pagina({ route }: { route: Route }) {
 
 export function App() {
   const route = useRoute();
-  const { heeftSleutel } = useApp();
+  const { heeftSleutel, instellingen } = useApp();
 
   useEffect(() => {
     const titel = TITELS[route.pagina];
@@ -86,10 +87,21 @@ export function App() {
         </div>
       </header>
       <main id="inhoud" tabIndex={-1}>
-        {!heeftSleutel && route.pagina !== 'instellingen' && (
+        {!heeftSleutel && route.pagina !== 'instellingen' && instellingen.ai.aanbieder !== 'gemini' && (
           <p className="melding waarschuwing">
-            Welkom! Om de AI-coach te gebruiken vul je eerst je eigen API-sleutel in. <a href="#/instellingen">Naar Instellingen</a>
+            Vul eerst je API-sleutel in om de AI-coach te gebruiken. <a href="#/instellingen">Naar Instellingen</a>
           </p>
+        )}
+        {!heeftSleutel && route.pagina !== 'instellingen' && instellingen.ai.aanbieder === 'gemini' && (
+          <div className="melding waarschuwing" style={{ marginBottom: '1.25rem' }}>
+            <p>
+              <strong>Welkom bij Verslagcoach!</strong> Om de AI-coach te gebruiken heb je één keer een gratis sleutel van Google Gemini nodig:
+            </p>
+            <GeminiStappen />
+            <a className="knop primair" href="#/instellingen">
+              Sleutel invullen in Instellingen
+            </a>
+          </div>
         )}
         <Pagina route={route} />
       </main>

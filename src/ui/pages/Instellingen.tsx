@@ -5,6 +5,7 @@ import { AANBIEDERS, foutMelding, type ModelInfo } from '../../ai/providers';
 import { maakBackupBestand, zetBackupTerug } from '../../data/backup';
 import { wisAlles } from '../../data/db';
 import { MAX_AFBEELDINGEN_GRENS, maskeerSleutel, wisSleutels, type AanbiederId, type Thema } from '../../data/settings';
+import { GeminiStappen, GeminiVoorwaarden } from '../components/GeminiUitleg';
 import { WordSjabloon } from '../components/WordSjabloon';
 import { downloadBestand } from '../download';
 
@@ -95,12 +96,28 @@ function AiSleutel() {
     }
   };
 
-  const bewaar = () => {
-    if (!invoer.trim()) return;
-    zetSleutel(aanbieder, invoer);
+  const bewaar = async () => {
+    const sleutel = invoer.trim();
+    if (!sleutel) return;
+    zetSleutel(aanbieder, sleutel);
     setInvoer('');
     setToon(false);
     meld('Sleutel opgeslagen op dit apparaat.', 'succes');
+    // Meteen controleren en een goed model kiezen, zodat de student niets meer hoeft te doen.
+    if (!beschrijving.kiesModel) return;
+    setBezig('modellen');
+    setTestUitslag(null);
+    try {
+      const lijst = await beschrijving.maak({ sleutel, model, baseUrl: instellingen.ai.baseUrl }).lijstModellen();
+      setModellen((m) => ({ ...m, [aanbieder]: lijst }));
+      const gekozen = lijst.some((m) => m.id === model) ? model : beschrijving.kiesModel(lijst);
+      if (gekozen && gekozen !== model) zetModel(gekozen);
+      setTestUitslag({ ok: true, tekst: `Je sleutel werkt. De coach gebruikt ${lijst.find((m) => m.id === gekozen)?.naam ?? gekozen}.` });
+    } catch (fout) {
+      setTestUitslag({ ok: false, tekst: foutMelding(fout) });
+    } finally {
+      setBezig('');
+    }
   };
 
   return (
@@ -112,7 +129,13 @@ function AiSleutel() {
         <ul style={{ margin: 0 }}>
           <li>Je sleutel blijft <strong>alleen op dit apparaat</strong>, in deze browser. Hij wordt nergens anders opgeslagen en gaat niet mee in back-ups of Word-bestanden.</li>
           <li>De app stuurt je vragen, teksten en screenshots rechtstreeks van jouw browser naar de AI-aanbieder. Er zit geen server van Verslagcoach tussen.</li>
-          <li>Het gebruik wordt <strong>afgerekend op jouw eigen account</strong> bij de aanbieder. Stel daar eventueel een maximumbedrag in.</li>
+          <li>
+            {beschrijving.gratis ? (
+              <>Met <strong>Google Gemini</strong> is het gratis (met een dagelijkse limiet). Bij andere aanbieders betaal je per gebruik op je eigen account.</>
+            ) : (
+              <>Het gebruik wordt <strong>afgerekend op jouw eigen account</strong> bij de aanbieder. Stel daar eventueel een maximumbedrag in.</>
+            )}
+          </li>
           <li>Gebruik je een gedeelde computer? Wis dan je sleutel als je klaar bent.</li>
         </ul>
       </div>
@@ -144,6 +167,14 @@ function AiSleutel() {
         </span>
       </div>
 
+      {aanbieder === 'gemini' && (
+        <div className="uitleg">
+          <strong>Zo maak je gratis een sleutel (± 1 minuut):</strong>
+          <GeminiStappen />
+          <GeminiVoorwaarden />
+        </div>
+      )}
+
       {beschrijving.heeftBaseUrl && (
         <div className="veld">
           <label htmlFor={ids.url}>Basis-URL van de API</label>
@@ -173,14 +204,14 @@ function AiSleutel() {
             placeholder={beschrijving.sleutelVoorbeeld}
             value={invoer}
             onChange={(e) => setInvoer(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && bewaar()}
+            onKeyDown={(e) => e.key === 'Enter' && void bewaar()}
           />
           <button type="button" onClick={() => setToon((t) => !t)} aria-pressed={toon}>
             {toon ? 'Verberg' : 'Toon'}
           </button>
         </div>
         <div className="rij" style={{ marginTop: '0.5rem' }}>
-          <button type="button" className="primair" onClick={bewaar} disabled={!invoer.trim()}>
+          <button type="button" className="primair" onClick={() => void bewaar()} disabled={!invoer.trim() || bezig !== ''}>
             Sleutel opslaan
           </button>
           {opgeslagenSleutel && (
