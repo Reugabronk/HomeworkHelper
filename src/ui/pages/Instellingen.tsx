@@ -5,6 +5,7 @@ import { AANBIEDERS, foutMelding, type ModelInfo } from '../../ai/providers';
 import { maakBackupBestand, zetBackupTerug } from '../../data/backup';
 import { wisAlles } from '../../data/db';
 import { MAX_AFBEELDINGEN_GRENS, maskeerSleutel, wisSleutels, type AanbiederId, type Thema } from '../../data/settings';
+import { WordSjabloon } from '../components/WordSjabloon';
 import { downloadBestand } from '../download';
 
 function Sectie({ id, titel, children }: { id: string; titel: string; children: ReactNode }) {
@@ -372,6 +373,7 @@ export function Instellingen() {
       <h1>Instellingen</h1>
       <Profiel />
       <AiSleutel />
+      <WordSjabloon />
       <ThemaKeuze />
       <Gegevens />
     </>

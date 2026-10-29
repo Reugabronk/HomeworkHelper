@@ -4,6 +4,7 @@ import { routeNaarHash } from '../../../app/router';
 import type { HoofdstukId } from '../../../data/types';
 import { ChatPaneel } from '../../components/ChatPaneel';
 import { useOpdracht } from '../../useOpdracht';
+import { ExportTab } from './ExportTab';
 import { OpdrachtTab } from './OpdrachtTab';
 import { ResultaatTab } from './ResultaatTab';
 import { TheorieTab } from './TheorieTab';
@@ -16,6 +17,7 @@ const TABS: { id: OpdrachtTabId; label: string }[] = [
   { id: 'theorie', label: '1. Theorie' },
   { id: 'uitwerking', label: '2. Uitwerking' },
   { id: 'resultaat', label: '3. Resultaat' },
+  { id: 'export', label: 'Word' },
 ];
 
 export function OpdrachtPagina({ id, tab }: { id: string; tab: OpdrachtTabId }) {
@@ -71,6 +73,7 @@ export function OpdrachtPagina({ id, tab }: { id: string; tab: OpdrachtTabId }) 
       {tab === 'theorie' && <TheorieTab {...props} />}
       {tab === 'uitwerking' && <UitwerkingTab {...props} />}
       {tab === 'resultaat' && <ResultaatTab {...props} />}
+      {tab === 'export' && <ExportTab {...props} />}
       <ChatPaneel opdracht={opdracht} hoofdstuk={hoofdstuk} wijzig={wijzig} />
     </>
   );
