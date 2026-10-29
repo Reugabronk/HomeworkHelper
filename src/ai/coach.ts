@@ -35,18 +35,22 @@ export async function laadAfbeeldingenVoorAi(ids: string[]): Promise<GeladenAfbe
   }));
 }
 
-/** Theorie uit andere opdrachten (actief en met tekst) plus geïmporteerde onderwerpen. */
-export async function verzamelBekendeTheorie(behalveOpdrachtId?: string): Promise<BekendOnderwerp[]> {
-  const [opdrachten, eerdere] = await Promise.all([alleOpdrachten(), alleEerdereTheorie()]);
-  const uitOpdrachten = opdrachten
+/** Theorie uit (andere) opdrachten: actieve onderwerpen met een titel. */
+export async function theorieUitOpdrachten(behalveOpdrachtId?: string): Promise<BekendOnderwerp[]> {
+  const opdrachten = await alleOpdrachten();
+  return opdrachten
     .filter((o) => o.id !== behalveOpdrachtId)
     .flatMap((o) =>
       o.theorie
         .filter((t) => t.status === 'actief' && t.titel.trim())
         .map((t) => ({ onderwerp: t.titel, bron: `${o.vak ? `${o.vak}: ` : ''}${o.titel}` })),
     );
-  const geimporteerd = eerdere.map((t) => ({ onderwerp: t.onderwerp, bron: t.bron }));
-  return [...uitOpdrachten, ...geimporteerd];
+}
+
+/** Theorie uit andere opdrachten plus geïmporteerde onderwerpen. */
+export async function verzamelBekendeTheorie(behalveOpdrachtId?: string): Promise<BekendOnderwerp[]> {
+  const [uitOpdrachten, eerdere] = await Promise.all([theorieUitOpdrachten(behalveOpdrachtId), alleEerdereTheorie()]);
+  return [...uitOpdrachten, ...eerdere.map((t) => ({ onderwerp: t.onderwerp, bron: t.bron }))];
 }
 
 export async function maakPlan(

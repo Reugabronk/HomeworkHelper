@@ -1,12 +1,13 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-
-function Placeholder() {
-  return <p>Verslagcoach wordt opgebouwd…</p>;
-}
+import { App } from './app/App';
+import { AppProvider } from './app/context';
+import './styles/global.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <Placeholder />
+    <AppProvider>
+      <App />
+    </AppProvider>
   </StrictMode>,
 );
