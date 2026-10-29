@@ -10,6 +10,8 @@ export default defineConfig({
   build: {
     target: 'es2022',
     sourcemap: true,
+    // De app is één bundel (~220 kB gzip, vooral de AI-SDK en JSZip); dat is prima.
+    chunkSizeWarningLimit: 1000,
   },
   test: {
     environment: 'node',
